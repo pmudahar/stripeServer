@@ -83,4 +83,4 @@ app.use(function(err, req, res, next) {
 });
 
 
-module.exports = main;
+module.exports = app;
