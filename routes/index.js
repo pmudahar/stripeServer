@@ -4,6 +4,7 @@ var Firebase = require("firebase");
 var ref = new Firebase("https://blazing-inferno-9634.firebaseio.com/");
 var accountSid = 'ACf30c3b302e9125a8f8674684ee3a5d79'; 
 var authToken = '5d274667e533974b31448ea15b5e5e97'; 
+var cors = require('cors');
 
 var client = require('twilio')(accountSid, authToken); 
 
@@ -65,7 +66,7 @@ router.get('/:userId', function(req, res) {
 
 
 // create customer Stripe token
-router.post('/', function(req, res) {
+router.post('/', cors(), function(req, res) {
 	var stripeToken = req.body.stripeToken;
 	var user_id = req.body.userId;
 
