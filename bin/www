@@ -1,0 +1,11 @@
+#!/usr/bin/env node
+var debug = require('debug')('charge');
+var app = require('../main');
+
+main.set('port', process.env.PORT || 8100);
+
+// console.log(app.get('port'));
+
+var server = main.listen(main.get('port'), function() {
+  debug('Express server listening on port ' + server.address().port);
+});
