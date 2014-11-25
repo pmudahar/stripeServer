@@ -66,7 +66,7 @@ router.get('/:userId', function(req, res) {
 
 
 // create customer Stripe token
-router.post('/', cors(), function(req, res) {
+router.post('/', function(req, res) {
 	var stripeToken = req.body.stripeToken;
 	var user_id = req.body.userId;
 
@@ -79,7 +79,7 @@ router.post('/', cors(), function(req, res) {
 		card: stripeToken,
 		description: 'Shovel booking'
 	}, function(err, customer) {
-		
+
 		console.log("in post: ", customer.id);
 		console.log("stripe token: ", stripeToken);
 		console.log("user: ", user_id);
