@@ -79,6 +79,7 @@ router.post('/', cors(), function(req, res) {
 		card: stripeToken,
 		description: 'Shovel booking'
 	}, function(err, customer) {
+		
 		console.log("in post: ", customer.id);
 		console.log("stripe token: ", stripeToken);
 		console.log("user: ", user_id);
