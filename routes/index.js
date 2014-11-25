@@ -68,32 +68,35 @@ router.get('/:userId', function(req, res) {
 // create customer Stripe token
 router.post('/', function(req, res) {
 	var stripeToken = req.body.stripeToken;
-	var user_id = req.body.userId;
+	var userId = req.body.userId;
 
-	console.log("stripe token: ", stripeToken);
-	console.log("user: ", user_id);
+	// console.log("stripe token: ", stripeToken);
+	// console.log("user: ", user_id);
 
 
 	// create a stripe customer object with token
 	stripe.customers.create({
 		card: stripeToken,
-		description: 'Shovel booking'
+		description: 'Shoveling driveway'
 	}, function(err, customer) {
 
-		console.log("in post: ", customer.id);
-		console.log("stripe token: ", stripeToken);
-		console.log("user: ", user_id);
+		// console.log("in post: ", customer.id);
+		// console.log("stripe token: ", stripeToken);
+		// console.log("user: ", user_id);
+
+		console.log("customer: ", customer);
 
 		if (err){
 			console.log(err);
+
 		}
 
 		else{
-		// store customer id so you can use it later
-		ref.child('users').child(user_id).update({customerID: customer.id},function(){
-			console.log("we are happy, and got money");
-			res.json(200,{});
-		});
+			// store customer id so you can use it later
+			ref.child('users').child(userId).update({customerID: customer.id},function(){
+				console.log("we are happy, and got money");
+				res.json(200,{});
+			});
 		}
 	});  	
 });
