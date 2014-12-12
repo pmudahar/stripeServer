@@ -38,68 +38,72 @@ var takeOutDashes = function(numWithDashes){
 };
 
 
-// Get the credit card details submitted by the form
-router.get('/:userId', function(req, res) {
-	var user_id = req.params.userId;
-
-	console.log("userID ", user_id);
-
-	// get user of that userID from Firebase
-	ref.child('users').child(user_id).child('customerID').once('value',function(data){
-		
-		var userStripe = data.val();
-		console.log('data: ', data.val());
-		console.log("userStripe: ", userStripe);
-
-		if (userStripe){
-			// if they have a card stored, get the last 4 digits and brand
-			stripe.customers.retrieve(userStripe, function(err, customer) {
-	  			var last = customer.cards.data[0].last4;
-	  			var brand = customer.cards.data[0].brand;
-	  			console.log("last ", last);
-	  			console.log("brand ", brand);
-	  			res.json(200, {last: last, brand: brand});
-			});
-		}
-	});
-});
-
-
 // create customer Stripe token
 router.post('/', function(req, res) {
+
 	var stripeToken = req.body.stripeToken;
 	var userId = req.body.userId;
-
-	// console.log("stripe token: ", stripeToken);
-	// console.log("user: ", user_id);
-
 
 	// create a stripe customer object with token
 	stripe.customers.create({
 		card: stripeToken,
 		description: 'Shoveling driveway'
 	}, function(err, customer) {
-
-		// console.log("in post: ", customer.id);
-		// console.log("stripe token: ", stripeToken);
-		// console.log("user: ", user_id);
-
-		console.log("customer: ", customer);
-
+		
 		if (err){
 			console.log(err);
-
 		}
 
 		else{
-			// store customer id so you can use it later
-			ref.child('users').child(userId).update({customerID: customer.id},function(){
-				console.log("we are happy, and got money");
-				res.json(200,{});
+			// store ccInfo in Firebase and send back to frontend
+			var customerObj = {};
+
+			customerObj.id = customer.id;
+			customerObj.brand = customer.cards.data[0].brand;
+			customerObj.lastFour = customer.cards.data[0].last4;
+			
+			ref.child('user').child(userId).update({ ccInfo: customerObj },function(){
+				res.json(200, customerObj);
 			});
 		}
 	});  	
 });
+
+
+
+// create customer Stripe token
+router.post('/bank', function(req, res) {
+	var bank = req.body;
+
+	console.log('bank', bank);
+
+	stripe.recipients.create({
+	  name: bank.name,
+	  type: "individual",
+	  bank_account: {
+	  	country: 'US',
+	  	routing_number: bank.routing,
+	  	account_number: bank.account
+	  }
+	}, function(err, recipient) {
+	
+		if (err) console.log(err);
+
+		var recipientObj = {
+			recipientID: recipient.id
+		}
+
+		console.log('recipient', recipientObj);
+
+		// update worker with stripe recipient id
+		ref.child('worker').child(bank.id).update(recipientObj,function(err){
+			if (err) console.log(err);
+
+			res.json(200, recipientObj);
+		});		
+	});
+});
+
 
 
 // charge customer credit card
@@ -111,8 +115,6 @@ router.post('/charge', function(req, res){
 	var user_id = req.body.userId;
 	var amount = parseInt(req.body.amount) * 100;
 	var customer_id = "";
-
-
 
 	// get customer_id from stripe customer
 	ref.child('users').child(user_id).child('customerID').once('value',function(data){
